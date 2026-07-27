@@ -165,3 +165,4 @@ jobs:
           claude_args: |
             --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*),Bash(gh search issues:*),Read,Grep,Glob"
             --max-turns 40
+          show_full_output: true # TEMPORAL: para depurar por qué no se publica el comentario. Revertir después.
