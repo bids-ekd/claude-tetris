@@ -1,0 +1,36 @@
+# Taxonomía de labels usada por el triaje automático de issues
+# (.github/workflows/claude-issue-triage.yml) y por scripts/setup-labels.sh.
+#
+# Los 9 labels por defecto de GitHub (bug, enhancement, documentation, question,
+# duplicate, good first issue, help wanted, invalid, wontfix) ya existen en el
+# repositorio y no se listan aquí; este archivo añade la taxonomía ampliada.
+#
+# Formato por entrada: "nombre|color hex (sin '#')|descripción en español".
+
+# --- Tipo (complementa a bug/enhancement/documentation/question ya existentes) ---
+- "refactor|c5def5|Mejora interna de código sin cambiar comportamiento observable"
+- "chore|d4c5f9|Tarea de mantenimiento (dependencias, configuración, limpieza)"
+
+# --- Área (mapeada a la arquitectura de game.js descrita en CLAUDE.md) ---
+- "area:gameplay|1d76db|Piezas, colisiones (collide), rotación y wall kicks (tryRotate)"
+- "area:render|1d76db|Dibujado en canvas: draw(), drawNext(), ghost piece"
+- "area:controles|1d76db|Manejo de teclado y entrada del jugador"
+- "area:puntuacion|1d76db|Puntuación, niveles, clearLines, dropInterval"
+- "area:ui|1d76db|index.html, style.css, HUD, overlay de pausa/game over"
+- "area:docs|1d76db|README.md, CLAUDE.md y otra documentación"
+- "area:ci|1d76db|Workflows de GitHub Actions"
+
+# --- Prioridad ---
+- "prioridad:critica|b60205|Bloquea el juego o rompe una función central; atender ya"
+- "prioridad:alta|d93f0b|Afecta la experiencia de forma notable; atender pronto"
+- "prioridad:media|fbca04|Molesto pero no bloqueante"
+- "prioridad:baja|0e8a16|Cosmético o de bajo impacto"
+
+# --- Esfuerzo estimado ---
+- "esfuerzo:xs|c2e0c6|Cambio trivial, minutos"
+- "esfuerzo:s|c2e0c6|Cambio pequeño y acotado a una función"
+- "esfuerzo:m|c2e0c6|Cambio moderado, puede tocar varias funciones o archivos"
+- "esfuerzo:l|c2e0c6|Cambio grande o que requiere rediseño"
+
+# --- Estado ---
+- "necesita-info|e4e669|Falta información para poder diagnosticar o priorizar el issue"
