@@ -24,8 +24,9 @@ Todo el estado del juego vive en variables globales a nivel de módulo (`board`,
 
 Piezas de flujo clave:
 
-- **Tablero**: matriz `ROWS × COLS` (20×10); cada celda es `0` (vacía) o un índice 1–7 que indica el color/tipo de pieza.
+- **Tablero**: matriz `ROWS × COLS` (20×10); cada celda es `0` (vacía), un índice 1–8 que indica el color/tipo de pieza, o el marcador `HOLE` (9) que representa un agujero permanente (ver pieza tuerca abajo).
 - **Piezas** (`PIECES`): matrices cuadradas fijas; `rotateCW` rota transponiendo + invirtiendo filas (no usa SRS, es una rotación simple).
+- **Pieza tuerca** (`NUT`, tipo 8): pieza reto de 3×3, un anillo macizo con un agujero central marcado como `HOLE` en vez de `0`. `collide` la trata como sólida (el agujero no permite encajar otras piezas dentro), y `clearLines` excluye explícitamente `HOLE` de las celdas que cuentan como "fila completa" — la fila donde queda ese agujero no se puede eliminar nunca. `drawBlock` dibuja el agujero como un círculo del color de fondo del tablero (`boardBgColor`, leído de `--board-bg`) sobre el bloque de la tuerca.
 - **Colisión** (`collide`): única función que valida límites del tablero y solapes; toda la lógica de movimiento pasa por ella antes de mutar `current.x/y`.
 - **Wall kicks** (`tryRotate`): tras rotar, prueba desplazamientos `[0, -1, 1, -2, 2]` en columnas hasta encontrar uno sin colisión.
 - **Game loop** (`loop`): un único `requestAnimationFrame` que acumula `dt` en `dropAccum` y baja la pieza cuando supera `dropInterval`; no hay loop de física separado del render.

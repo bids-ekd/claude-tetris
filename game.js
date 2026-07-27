@@ -4,6 +4,12 @@ const COLS = 10;
 const ROWS = 20;
 const BLOCK = 30;
 
+// Tipo de pieza "tuerca" y marcador de su agujero central.
+// HOLE no es un tipo de pieza: es un valor de celda que viaja en la matriz de
+// la pieza y queda fijado en el tablero, marcando un hueco permanente.
+const NUT = 8;
+const HOLE = 9;
+
 const COLORS = [
   null,
   '#4dd0e1', // I - cyan
@@ -13,6 +19,7 @@ const COLORS = [
   '#e57373', // Z - red
   '#90caf9', // J - azul pálido
   '#ffb74d', // L - orange
+  '#b0bec5', // Tuerca - gris metálico
 ];
 
 const PIECES = [
@@ -24,6 +31,7 @@ const PIECES = [
   [[5,5,0],[0,5,5],[0,0,0]],                  // Z
   [[6,0,0],[6,6,6],[0,0,0]],                  // J
   [[0,0,7],[7,7,7],[0,0,0]],                  // L
+  [[NUT,NUT,NUT],[NUT,HOLE,NUT],[NUT,NUT,NUT]], // Tuerca - reto: agujero permanente
 ];
 
 const LINE_SCORES = [0, 100, 300, 500, 800];
@@ -43,15 +51,17 @@ const themeToggle = document.getElementById('theme-toggle');
 
 let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
 let gridLineColor = '#22222e';
+let boardBgColor = '#1a1a25';
 
-function updateGridColor() {
+function updateThemeColors() {
   gridLineColor = getComputedStyle(document.body).getPropertyValue('--grid-line-color').trim();
+  boardBgColor = getComputedStyle(document.body).getPropertyValue('--board-bg').trim();
 }
 
 function applyTheme(isLight) {
   document.body.classList.toggle('light', isLight);
   themeToggle.checked = isLight;
-  updateGridColor();
+  updateThemeColors();
 }
 
 function initTheme() {
@@ -70,7 +80,7 @@ function createBoard() {
 }
 
 function randomPiece() {
-  const type = Math.floor(Math.random() * 7) + 1;
+  const type = Math.floor(Math.random() * 8) + 1;
   const shape = PIECES[type].map(row => [...row]);
   return { type, shape, x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2), y: 0 };
 }
@@ -119,7 +129,9 @@ function merge() {
 function clearLines() {
   let cleared = 0;
   for (let r = ROWS - 1; r >= 0; r--) {
-    if (board[r].every(v => v !== 0)) {
+    // Una fila con el agujero de una tuerca (HOLE) nunca cuenta como completa:
+    // ese hueco es permanente y no se puede rellenar.
+    if (board[r].every(v => v !== 0 && v !== HOLE)) {
       board.splice(r, 1);
       board.unshift(new Array(COLS).fill(0));
       cleared++;
@@ -182,13 +194,27 @@ function updateHUD() {
 
 function drawBlock(context, x, y, colorIndex, size, alpha) {
   if (!colorIndex) return;
-  const color = COLORS[colorIndex];
+  // El agujero de la tuerca se dibuja como un bloque normal "taladrado" con un
+  // círculo del color de fondo del tablero, para distinguirlo de una celda vacía.
+  const color = colorIndex === HOLE ? COLORS[NUT] : COLORS[colorIndex];
   context.globalAlpha = alpha ?? 1;
   context.fillStyle = color;
   context.fillRect(x * size + 1, y * size + 1, size - 2, size - 2);
   // highlight
   context.fillStyle = 'rgba(255,255,255,0.12)';
   context.fillRect(x * size + 1, y * size + 1, size - 2, 4);
+  if (colorIndex === HOLE) {
+    const cx = x * size + size / 2;
+    const cy = y * size + size / 2;
+    const radius = size * 0.3;
+    context.fillStyle = boardBgColor;
+    context.beginPath();
+    context.arc(cx, cy, radius, 0, Math.PI * 2);
+    context.fill();
+    context.strokeStyle = 'rgba(0,0,0,0.3)';
+    context.lineWidth = 1;
+    context.stroke();
+  }
   context.globalAlpha = 1;
 }
 
