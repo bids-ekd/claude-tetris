@@ -76,12 +76,16 @@ jobs:
             - NUNCA uses comillado ANSI-C ($'...') en Bash: el sistema de
               permisos lo rechaza siempre ("Contains ansi_c_string"),
               independientemente de su contenido.
-            - En cualquier argumento entre comillas (como --body), un salto
-              de línea real seguido de "#" queda bloqueado ("Newline followed
-              by # inside a quoted argument can hide arguments from path
-              validation"). Esto afecta directamente a los encabezados
-              Markdown (#, ##, ###): si van al inicio de una línea dentro de
-              --body, el comando se deniega. Más detalles en el paso 5.
+            - NUNCA pegues el Markdown del diagnóstico directamente como
+              argumento --body de un comando Bash: un salto de línea real
+              seguido de "#" dentro de un argumento entre comillas queda
+              bloqueado ("Newline followed by # inside a quoted argument can
+              hide arguments from path validation"), lo que rompe cualquier
+              encabezado Markdown (#, ##, ###) que empiece una línea. Por eso
+              el paso 5 usa tu herramienta de escritura de archivos (Write) y
+              --body-file en vez de --body: el contenido nunca pasa por un
+              argumento de shell, así que esta restricción no aplica y puedes
+              usar Markdown estándar sin trucos de comillado.
 
             Pasos:
 
@@ -123,53 +127,54 @@ jobs:
                Si encuentras uno claramente duplicado, menciónalo en el
                diagnóstico (no cierres ni edites el otro issue).
 
-            5. Publica el diagnóstico como comentario, pasando el Markdown
-               directamente en el argumento --body entre comillas dobles
-               normales (nunca $'...', ver restricciones arriba):
-               gh issue comment ${{ github.event.issue.number }} --repo ${{ github.repository }} --edit-last --create-if-none --body "..."
-               El --body puede tener saltos de línea reales sin problema,
-               PERO ningún salto de línea puede ir seguido de "#" (ver
-               restricciones arriba) — por eso en el formato de abajo los
-               títulos de sección van en **negrita** y NUNCA como encabezado
-               Markdown (#, ## o ###) al inicio de línea. Backticks, comillas
-               simples, guiones y "---" no tienen ninguna restricción, úsalos
-               con normalidad. El --edit-last --create-if-none hace que una
-               re-ejecución tras editar el issue actualice el mismo
-               comentario en vez de crear uno nuevo. Usa exactamente este
-               formato (Markdown, en español):
+            5. Escribe el diagnóstico completo con tu herramienta Write en el
+               archivo /tmp/claude-triage-comment.md, en GitHub Flavored
+               Markdown estándar (encabezados reales con #, ## y ###; nunca
+               negrita como sustituto de un encabezado). Usa exactamente este
+               formato (en español):
 
                <!-- claude-triage -->
-               **Diagnóstico automático**
+               # Diagnóstico automático
 
                **Resumen:** (1-2 frases de qué pide o reporta el issue)
                **Clasificación:** tipo · área(s) · prioridad · esfuerzo — con una
                frase breve justificando cada elección
 
-               **Análisis técnico**
+               ## Análisis técnico
                (causa probable, archivos/funciones de game.js implicadas con
                archivo:línea cuando aplique; si es una feature, qué partes del
                código habría que tocar)
 
-               **Enfoque propuesto**
+               ## Enfoque propuesto
                (pasos concretos de implementación, en orden)
 
-               **Criterios de aceptación**
+               ## Criterios de aceptación
                - [ ] ...
                - [ ] ...
 
-               **Riesgos / regresiones a vigilar**
+               ## Riesgos / regresiones a vigilar
                (p. ej. colisiones y wall kicks, dropInterval y niveles,
                sincronía entre COLS/ROWS/BLOCK y el tamaño del <canvas> en
                index.html, u otras que apliquen)
 
-               **Información que falta**
+               ## Información que falta
                (omite esta sección si no aplica)
 
                ---
                *Generado automáticamente por Claude. Revisa antes de implementar.*
 
-            No hagas commits, no abras pull requests, no modifiques archivos:
-            esta tarea es solo de análisis, etiquetado y comentario.
+               Después, publica ese archivo como comentario (nunca pegues el
+               Markdown en --body, ver restricciones arriba):
+               gh issue comment ${{ github.event.issue.number }} --repo ${{ github.repository }} --edit-last --create-if-none --body-file /tmp/claude-triage-comment.md
+               El --edit-last --create-if-none hace que una re-ejecución tras
+               editar el issue actualice el mismo comentario en vez de crear
+               uno nuevo.
+
+            No hagas commits, no abras pull requests, no modifiques archivos
+            del repositorio: esta tarea es solo de análisis, etiquetado y
+            comentario. El único archivo que puedes escribir es el temporal
+            /tmp/claude-triage-comment.md del paso 5, fuera del checkout del
+            repositorio.
           claude_args: |
-            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*),Bash(gh search issues:*),Read,Grep,Glob"
+            --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*),Bash(gh search issues:*),Read,Grep,Glob,Write"
             --max-turns 40
