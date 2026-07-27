@@ -114,7 +114,7 @@ jobs:
                uno nuevo. Usa exactamente este formato (Markdown, en español):
 
                <!-- claude-triage -->
-               ## 🔎 Diagnóstico automático
+               ## Diagnóstico automático
 
                **Resumen:** (1-2 frases de qué pide o reporta el issue)
                **Clasificación:** tipo · área(s) · prioridad · esfuerzo — con una
