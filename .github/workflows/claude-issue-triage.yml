@@ -108,7 +108,17 @@ jobs:
                directamente en el argumento --body (no uses --body-file: no
                tienes ninguna herramienta para crear archivos, solo Bash con
                los comandos gh listados abajo, y Read/Grep/Glob):
-               gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --edit-last --create-if-none --body "..."
+               gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --edit-last --create-if-none --body '...'
+               IMPORTANTE — usa comillas SIMPLES para --body, nunca dobles: el
+               diagnóstico incluye backticks (código, archivo:línea) y con
+               comillas dobles bash los interpreta como sustitución de
+               comandos, lo que bloquea la ejecución por el sistema de
+               permisos y el comentario nunca se publica. Con comillas
+               simples, backticks y $ quedan literales. Si el texto necesita
+               incluir una comilla simple (p. ej. dentro de una palabra en
+               inglés como "it's"), ciérrala, escápala y reábrela con la
+               secuencia '"'"': "it'"'"'s" dentro del --body se convierte en
+               it's ya publicado.
                El --edit-last --create-if-none hace que una re-ejecución tras
                editar el issue actualice el mismo comentario en vez de crear
                uno nuevo. Usa exactamente este formato (Markdown, en español):
