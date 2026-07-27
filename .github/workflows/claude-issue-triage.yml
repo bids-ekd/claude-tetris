@@ -104,11 +104,14 @@ jobs:
                Si encuentras uno claramente duplicado, menciónalo en el
                diagnóstico (no cierres ni edites el otro issue).
 
-            5. Publica el diagnóstico como comentario. Usa exactamente este
-               formato (Markdown, en español), y publícalo con
-               gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --edit-last --create-if-none --body-file <archivo temporal>
-               para que una re-ejecución tras editar el issue actualice el
-               mismo comentario en vez de crear uno nuevo:
+            5. Publica el diagnóstico como comentario, pasando el Markdown
+               directamente en el argumento --body (no uses --body-file: no
+               tienes ninguna herramienta para crear archivos, solo Bash con
+               los comandos gh listados abajo, y Read/Grep/Glob):
+               gh issue comment "$ISSUE_NUMBER" --repo "$REPO" --edit-last --create-if-none --body "..."
+               El --edit-last --create-if-none hace que una re-ejecución tras
+               editar el issue actualice el mismo comentario en vez de crear
+               uno nuevo. Usa exactamente este formato (Markdown, en español):
 
                <!-- claude-triage -->
                ## 🔎 Diagnóstico automático
@@ -144,4 +147,4 @@ jobs:
             esta tarea es solo de análisis, etiquetado y comentario.
           claude_args: |
             --allowedTools "Bash(gh issue view:*),Bash(gh issue edit:*),Bash(gh issue comment:*),Bash(gh label list:*),Bash(gh search issues:*),Read,Grep,Glob"
-            --max-turns 25
+            --max-turns 40
