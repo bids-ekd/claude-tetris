@@ -245,3 +245,117 @@ kbd {
 #restart-btn:hover {
   background: var(--restart-hover-bg);
 }
+
+/* ---- Records y pantalla de inicio ---- */
+#start-overlay .overlay-box {
+  width: 100%;
+  max-width: 320px;
+  padding: 12px;
+}
+
+.start-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: 6px;
+  color: var(--title-color);
+}
+
+.start-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--controls-color);
+}
+
+.highscore-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.highscore-table th,
+.highscore-table td {
+  padding: 4px 8px;
+  text-align: center;
+  color: var(--text);
+}
+
+.highscore-table th {
+  font-size: 10px;
+  letter-spacing: 1px;
+  color: var(--label-color);
+}
+
+.highscore-table tr.is-new {
+  color: var(--value-color);
+  font-weight: 700;
+}
+
+.highscore-empty {
+  font-size: 12px;
+  color: var(--controls-color);
+}
+
+#highscore-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+#highscore-form.hidden {
+  display: none;
+}
+
+#highscore-form label {
+  font-size: 12px;
+  color: var(--label-color);
+}
+
+#player-name-input {
+  background: var(--kbd-bg);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 14px;
+  text-align: center;
+}
+
+#save-highscore-btn,
+#play-btn {
+  background: var(--restart-bg);
+  color: var(--restart-color);
+  border: none;
+  border-radius: 6px;
+  padding: 10px 28px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.15s;
+}
+
+#save-highscore-btn:hover,
+#play-btn:hover {
+  background: var(--restart-hover-bg);
+}
+
+#reset-records-btn {
+  margin-top: 4px;
+  background: transparent;
+  color: var(--controls-color);
+  border: 1px solid var(--kbd-border);
+  border-radius: 6px;
+  padding: 6px 16px;
+  font-size: 12px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  transition: background 0.15s, color 0.15s;
+}
+
+#reset-records-btn:hover {
+  background: var(--kbd-bg);
+  color: var(--text);
+}

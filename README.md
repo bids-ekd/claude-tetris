@@ -43,6 +43,9 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Sistema de puntuación** clásico de Tetris (100 / 300 / 500 / 800 multiplicado por nivel).
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
 - **Pausa** y **Game Over** con opción de reinicio.
+- **Combo**: contador de bloqueos consecutivos que despejan al menos una línea, visible en el panel lateral; se resetea en cuanto una pieza se fija sin limpiar ninguna.
+- **Tabla de records local**: hasta 5 mejores puntuaciones (nombre, score, líneas, nivel y fecha) persistidas en `localStorage`, junto con el mejor combo y las líneas máximas conseguidas históricamente.
+- **Pantalla de inicio**: al cargar la página se muestra un overlay con el título, la tabla de records, las estadísticas históricas y un botón **Jugar** para arrancar la partida (el juego ya no arranca solo).
 
 ---
 
@@ -98,8 +101,9 @@ El juego se compone de tres archivos que cooperan:
 Define la estructura visual:
 
 - Un `<canvas id="board">` de **300 × 600** píxeles donde se renderiza el tablero.
-- Un panel lateral con `SCORE`, `LINES`, `LEVEL`, vista de la siguiente pieza y la lista de controles.
-- Un overlay para los estados **PAUSA** y **GAME OVER**.
+- Un panel lateral con `SCORE`, `LINES`, `LEVEL`, `COMBO`, vista de la siguiente pieza y la lista de controles.
+- Un overlay para los estados **PAUSA** y **GAME OVER**, que en caso de puntuación clasificable para el top 5 muestra además un formulario para guardar el nombre del jugador y la tabla de records actualizada.
+- Un overlay de inicio (`#start-overlay`), visible al cargar la página, con la tabla de los 5 mejores records, el mejor combo y las líneas máximas históricas, un botón **Jugar** y un botón **Resetear records**.
 
 ### 2. `style.css`
 
@@ -118,26 +122,40 @@ Contiene toda la lógica del juego. A grandes rasgos:
 - **Puntuación**: usa la tabla clásica `[0, 100, 300, 500, 800]` multiplicada por el nivel actual; el hard drop suma 2 puntos por celda recorrida y el soft drop 1 punto por fila.
 - **Nivel y velocidad**: el nivel sube cada 10 líneas; la velocidad de caída se calcula como `max(100, 1000 − (level − 1) × 90)` milisegundos.
 - **Ghost piece** (`ghostY`): proyecta la posición final de la pieza actual hacia abajo y la dibuja con `globalAlpha = 0.2`.
+- **Combo** (`combo`): se incrementa en `lockPiece()` cada vez que el bloqueo despeja al menos una línea, y se resetea a `0` en cuanto un bloqueo no limpia ninguna. Se muestra en el HUD y se usa para calcular el mejor combo histórico.
+- **Records locales** (`localStorage`): tres claves independientes —
+  - `tetris-highscores`: array JSON con hasta 5 entradas `{ name, score, lines, level, date }`, ordenado descendente por `score`.
+  - `tetris-stats`: objeto JSON `{ bestCombo, maxLines }` con los máximos históricos de todas las partidas guardadas.
+  - `tetris-last-name`: último nombre introducido, para prellenar el formulario.
+
+  Todas las lecturas están envueltas en `try/catch` con fallback a un array/objeto vacío por si el dato en `localStorage` está corrupto. El renderizado de la tabla (`renderHighscoreTable`) usa siempre `textContent`/`createElement`, nunca `innerHTML`, para evitar XSS con datos manipulados externamente.
+- **Pantalla de inicio y arranque** (`refreshStartScreen`, `#start-overlay`): al cargar la página se muestra la tabla de records y las estadísticas históricas; `init()` ya no se ejecuta automáticamente, sino al pulsar **Jugar**. El botón **Resetear records** borra `tetris-highscores` y `tetris-stats` tras confirmar.
 
 ### Flujo del juego
 
 ```
-init()
-  ├─ createBoard()                  → matriz vacía
-  ├─ next = randomPiece()
-  ├─ spawn()                        → mueve next a current y genera nueva next
-  └─ requestAnimationFrame(loop)
-        ↓
-   loop(timestamp)
-     ├─ acumula dt
-     ├─ si dt ≥ dropInterval → baja la pieza o llama a lockPiece()
-     ├─ draw()  (grid + tablero + ghost + pieza actual)
+carga de la página
+  ├─ initTheme()
+  ├─ refreshStartScreen()           → pinta records + stats en #start-overlay
+  └─ #start-overlay visible, juego parado
+
+   click en "Jugar" → init()
+     ├─ createBoard()                  → matriz vacía
+     ├─ combo = 0, maxLinesThisRun = 0
+     ├─ next = randomPiece()
+     ├─ spawn()                        → mueve next a current y genera nueva next
      └─ requestAnimationFrame(loop)
+           ↓
+      loop(timestamp)
+        ├─ acumula dt
+        ├─ si dt ≥ dropInterval → baja la pieza o llama a lockPiece()
+        ├─ draw()  (grid + tablero + ghost + pieza actual)
+        └─ requestAnimationFrame(loop)
 
    keydown → mover / rotar / soft-drop / hard-drop / pausa
 ```
 
-Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara `endGame()` y se muestra el overlay de **Game Over**.
+Cuando una pieza recién generada ya colisiona al aparecer (`spawn`), se dispara `endGame()`: se guarda `maxLinesThisRun`, se muestra el overlay de **Game Over** y, si la puntuación entra en el top 5, un formulario para guardar el nombre del jugador (`saveCurrentHighscore`) junto a la tabla de records.
 
 ---
 
