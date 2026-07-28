@@ -25,6 +25,7 @@ Implementación del clásico **Tetris** en JavaScript vanilla, usando HTML5 Canv
   - [Tecnologías](#tecnologías)
   - [Estructura del proyecto](#estructura-del-proyecto)
   - [Personalización](#personalización)
+  - [Skins visuales](#skins-visuales)
   - [Licencia](#licencia)
 
 ---
@@ -43,6 +44,7 @@ Es una versión jugable del Tetris clásico con todas las mecánicas que esperar
 - **Sistema de puntuación** clásico de Tetris (100 / 300 / 500 / 800 multiplicado por nivel).
 - **Niveles** que aumentan cada 10 líneas y aceleran la caída.
 - **Pausa** y **Game Over** con opción de reinicio.
+- **Selector de skins visuales** (Retro, Neón, Pastel, Pixel Art) con cambio instantáneo y persistencia local.
 
 ---
 
@@ -179,6 +181,25 @@ Algunos parámetros fáciles de tunear en `game.js`:
 | `dropInterval` | Velocidad inicial de caída en ms         | `1000`                |
 
 > Si cambias `COLS`, `ROWS` o `BLOCK`, recuerda ajustar también `width` y `height` del `<canvas id="board">` en `index.html` para que coincida (`COLS × BLOCK` × `ROWS × BLOCK`).
+
+---
+
+## Skins visuales
+
+Un `<select id="skin-select">` en el panel lateral, junto al toggle de tema, permite cambiar el estilo de dibujo de los bloques sin recargar la página. La elección se guarda en `localStorage` (clave `tetris-skin`) y se restaura al volver a abrir el juego.
+
+Hay 4 skins disponibles, cada una con su propia paleta y su propia función de dibujo (`SKINS` en `game.js`):
+
+| Skin          | Descripción                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------- |
+| **Retro**     | Skin por defecto. Reproduce el render clásico original: `fillRect` plano + banda de highlight.    |
+| **Neón**      | Paleta saturada sobre fondo oscuro, con efecto de brillo (`shadowBlur`/`shadowColor`) por bloque. |
+| **Pastel**    | Colores suaves y esquinas redondeadas (con `roundRect`, o `fillRect` si el navegador no lo soporta). |
+| **Pixel Art** | Textura de sub-píxeles con dithering en vez de un bloque de color plano.                          |
+
+En las 4 skins, el agujero permanente de la pieza tuerca (`HOLE`) se sigue marcando con un círculo del color de fondo del tablero (`boardBgColor`), para que siempre sea reconocible sin importar la skin activa.
+
+Cada skin añade una clase al `<body>` (`skin-retro`, `skin-neon`, `skin-pastel`, `skin-pixel`) que permite sobrescribir por CSS las variables `--board-bg` y `--grid-line-color` (y otras relacionadas), de forma independiente al tema claro/oscuro, que sigue funcionando igual con cualquier skin activa.
 
 ---
 

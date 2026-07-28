@@ -245,3 +245,38 @@ kbd {
 #restart-btn:hover {
   background: var(--restart-hover-bg);
 }
+
+/* ---- Skins visuales ---- */
+
+/* Selector de skin: mismo lenguaje visual que los <kbd> de controles. */
+#skin-select {
+  background: var(--kbd-bg);
+  color: var(--kbd-color);
+  border: 1px solid var(--kbd-border);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Retro (default) no necesita overrides: usa las variables de :root / body.light tal cual. */
+
+body.skin-neon {
+  --board-bg: #050508;
+  --grid-line-color: #17172a;
+  --board-border: #1f1f2e;
+  --board-shadow: rgba(0, 229, 255, 0.25);
+}
+
+body.skin-pastel {
+  --board-bg: #fdf6f0;
+  --grid-line-color: #ece3e3;
+  --board-border: #e8d9d9;
+  --board-shadow: rgba(0, 0, 0, 0.1);
+}
+
+body.skin-pixel {
+  --board-bg: #14141c;
+  --grid-line-color: #2a2a38;
+}
