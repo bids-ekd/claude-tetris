@@ -48,8 +48,16 @@ const overlayTitle = document.getElementById('overlay-title');
 const overlayScore = document.getElementById('overlay-score');
 const restartBtn = document.getElementById('restart-btn');
 const themeToggle = document.getElementById('theme-toggle');
+const pauseOverlay = document.getElementById('pause-overlay');
+const pauseMenu = document.getElementById('pause-menu');
+const pauseControlsPanel = document.getElementById('pause-controls-panel');
+const resumeBtn = document.getElementById('resume-btn');
+const pauseRestartBtn = document.getElementById('pause-restart-btn');
+const showControlsBtn = document.getElementById('show-controls-btn');
+const backBtn = document.getElementById('back-btn');
+const startLevelSelect = document.getElementById('start-level-select');
 
-let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId;
+let board, current, next, score, lines, level, paused, gameOver, lastTime, dropAccum, dropInterval, animId, startLevel;
 let gridLineColor = '#22222e';
 let boardBgColor = '#1a1a25';
 
@@ -141,7 +149,9 @@ function clearLines() {
   if (cleared) {
     lines += cleared;
     score += (LINE_SCORES[cleared] || 0) * level;
-    level = Math.floor(lines / 10) + 1;
+    // El nivel inicial elegido en el menú de pausa (startLevel) se conserva:
+    // el progreso por líneas se suma sobre ese nivel, no desde 1.
+    level = startLevel + Math.floor(lines / 10);
     dropInterval = Math.max(100, 1000 - (level - 1) * 90);
     updateHUD();
   }
@@ -282,13 +292,13 @@ function togglePause() {
   if (gameOver) return;
   paused = !paused;
   if (!paused) {
+    pauseOverlay.classList.add('hidden');
     lastTime = performance.now();
     loop(lastTime);
   } else {
     cancelAnimationFrame(animId);
-    overlayTitle.textContent = 'PAUSA';
-    overlayScore.textContent = '';
-    overlay.classList.remove('hidden');
+    showPauseMenu();
+    pauseOverlay.classList.remove('hidden');
   }
 }
 
@@ -315,22 +325,29 @@ function init() {
   board = createBoard();
   score = 0;
   lines = 0;
-  level = 1;
+  startLevel = loadStartLevel();
+  level = startLevel;
   paused = false;
   gameOver = false;
-  dropInterval = 1000;
+  dropInterval = Math.max(100, 1000 - (startLevel - 1) * 90);
   dropAccum = 0;
   lastTime = performance.now();
   next = randomPiece();
   spawn();
   updateHUD();
   overlay.classList.add('hidden');
+  pauseOverlay.classList.add('hidden');
+  startLevelSelect.value = String(startLevel);
   cancelAnimationFrame(animId);
   animId = requestAnimationFrame(loop);
 }
 
 document.addEventListener('keydown', e => {
-  if (e.code === 'KeyP') { togglePause(); return; }
+  if (e.code === 'KeyP' || e.code === 'Escape') { togglePause(); return; }
+  if (paused && (e.code === 'Space' || e.code === 'ArrowLeft' || e.code === 'ArrowRight' || e.code === 'ArrowUp' || e.code === 'ArrowDown')) {
+    // Evita scroll de página / activación accidental de botones del menú de pausa.
+    e.preventDefault();
+  }
   if (paused || gameOver) return;
   switch (e.code) {
     case 'ArrowLeft':
@@ -353,6 +370,39 @@ document.addEventListener('keydown', e => {
   }
   updateHUD();
 });
+
+// ---- Menú de pausa ----
+
+function loadStartLevel() {
+  const saved = parseInt(localStorage.getItem('tetris-start-level'), 10);
+  if (Number.isNaN(saved) || saved < 1 || saved > 15) return 1;
+  return saved;
+}
+
+function saveStartLevel(newLevel) {
+  localStorage.setItem('tetris-start-level', String(newLevel));
+}
+
+function showPauseMenu() {
+  pauseMenu.classList.remove('hidden');
+  pauseControlsPanel.classList.add('hidden');
+}
+
+function showPauseControls() {
+  pauseMenu.classList.add('hidden');
+  pauseControlsPanel.classList.remove('hidden');
+}
+
+startLevelSelect.addEventListener('change', () => {
+  const val = parseInt(startLevelSelect.value, 10);
+  const clamped = Number.isNaN(val) ? 1 : Math.min(15, Math.max(1, val));
+  saveStartLevel(clamped);
+});
+
+resumeBtn.addEventListener('click', togglePause);
+pauseRestartBtn.addEventListener('click', init);
+showControlsBtn.addEventListener('click', showPauseControls);
+backBtn.addEventListener('click', showPauseMenu);
 
 restartBtn.addEventListener('click', init);
 
